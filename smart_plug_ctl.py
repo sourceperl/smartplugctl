@@ -9,7 +9,9 @@
 #
 # license: MIT
 
+from __future__ import print_function
 import sys
+import time
 import subprocess
 import argparse
 
@@ -29,7 +31,22 @@ cmd += plug_on_opt if args.state == 'on' else plug_off_opt
 cmd += ' 2>/dev/null'
 
 # do it
-return_code = subprocess.call(cmd, shell=True)
+do_retry = 3
+while True:
+    return_code = subprocess.call(cmd, shell=True)
+    do_retry -= 1
+    # exit if cmd is ok or too retry
+    if return_code == 0 or do_retry < 1:
+        break
+    else:
+        print('error, do another try', file=sys.stderr)
+    # wait before next try
+    time.sleep(0.2)
 
-# return gatttool error code
+# print status
+if return_code == 0:
+    print('smartPlug is set {0}'.format(args.state))
+else:
+    print('unable to contact smartPlug', file=sys.stderr)
+# return error code
 sys.exit(return_code)
