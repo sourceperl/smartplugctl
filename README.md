@@ -5,10 +5,11 @@ Pi)
 
 ![](img/rpi_smartplug.jpg)
 
-## Usage example
+## Read first
 
 On Raspbian the script don't require sudo right for pi user but it's necessary
-on some host.
+on some host. It use bluez gatttool commmand line utility to do the stuff. A
+full python module is also available with no gatttool dependency see below.
 
 ### Require
 
@@ -39,3 +40,11 @@ or on debian based system :
 ### Help
 
     smartplugctl -h
+
+### Python module
+
+Advanced users can look at python_module/ for pySmartPlugSmpB16 module.
+The bluepy package is needed for use this, see https://github.com/IanHarvey/bluepy
+for installation purpose.
+
+
