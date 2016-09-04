@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+# smartPlug AWOX control with Bluez
+#
+# Control an AWOX smartPlug (BLE electrical plug with relay) from command line
+# sample: './smart_plug_ctl.py 98:7B:F3:34:78:52 on' to turn on the plug
+#
+# needs: bluez installed with gatttool utility
+#
+# license: MIT
+
+from __future__ import print_function
+import sys
+import time
+import pexpect
+import argparse
+
+# some const
+RET_CODE_OK = 0
+RET_CODE_ERROR = 1
+
+# some var
+return_code = RET_CODE_OK
+
+# parse args
+parser = argparse.ArgumentParser()
+parser.add_argument('ble_addr', type=str,
+                    help='plug bluetooth LE address (like 98:7b:f3:34:78:52)')
+parser.add_argument('command', type=str, choices=['on', 'off', 'status'],
+                    help='command to send at plug')
+args = parser.parse_args()
+
+# format gatttool commands
+cmd_prefix = 'gatttool -b {0}'.format(args.ble_addr)
+cmd_on = cmd_prefix + ' --char-write -a 0x2b -n 0f06030001000005ffff'
+cmd_off = cmd_prefix + ' --char-write -a 0x2b -n 0f06030000000004ffff'
+cmd_status = cmd_prefix + ' --handle=0x2b --char-write-req --value=0f050400000005ffff --listen'
+
+# set plug on/off
+if args.command == 'on' or args.command == 'off':
+    do_retry = 3
+    while True:
+        cmd_state = cmd_on if args.command == 'on' else cmd_off
+        (command_output, command_code) = pexpect.run(cmd_state, withexitstatus=1)
+        return_code = RET_CODE_OK if command_code == 0 else RET_CODE_ERROR
+        do_retry -= 1
+        # exit if cmd is ok or too retry
+        if command_code == 0 or do_retry < 1:
+            break
+        else:
+            print('error, do another try', file=sys.stderr)
+        # wait before next try
+        time.sleep(0.2)
+
+    # print status
+    if return_code == RET_CODE_OK:
+        print('smartPlug is set {0}'.format(args.command))
+    else:
+        print('unable to contact smartPlug', file=sys.stderr)
+
+# request plug power level and state
+elif args.command == 'status':
+    # launch command and wait notification
+    p = pexpect.spawn(cmd_status)
+    i = p.expect([pexpect.TIMEOUT, pexpect.EOF, r'0f 0f.*ff ff'], timeout=10.0)
+    p.terminate()
+
+    # print status
+    if i == 0 or i == 1:
+        print('error occur (gatttool say = \'%s\')' % p.before.rstrip(), file=sys.stderr)
+        return_code = RET_CODE_ERROR
+    elif i == 2:
+        # decode data (plug state at byte index 4, power in mW at bytes index 6 to 9)
+        data = p.after.split()
+        # print('RAW = %s' % data)
+        status = 'on' if int(data[4], 16) == 1 else 'off'
+        power = int(data[6]+data[7]+data[8]+data[9], 16) / 1000
+        # print result
+        print('plug state = %s' % status)
+        print('plug power = %d W' % power)
+        return_code = RET_CODE_OK
+
+# return error code
+sys.exit(return_code)

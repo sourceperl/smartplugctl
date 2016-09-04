@@ -1,1 +1,1 @@
-pexpect
+bluepy >= 1.0.5
