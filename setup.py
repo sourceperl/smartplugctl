@@ -4,6 +4,8 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
+    name='smartplugctl',
+    version='0.0.1',
     license='MIT',
     url='https://github.com/sourceperl/smartplugctl',
     platforms='any',
