@@ -21,11 +21,12 @@ old_scripts/.
 Python module bluepy (https://github.com/IanHarvey/bluepy) is require. You can 
 install it with :
 
-    sudo apt-get install python-pip libglib2.0-dev
+    sudo apt-get install -y python-pip libglib2.0-dev
     sudo pip install bluepy
 
 ### Setup
 
+    sudo apt-get install -y python-setuptools
     sudo python setup.py install
 
 ### Find a plug
