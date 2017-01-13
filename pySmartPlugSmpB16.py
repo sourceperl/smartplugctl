@@ -83,11 +83,11 @@ class NotificationDelegate(btle.DefaultDelegate):
         if bytes_data[0:3] == bytes([0x0f, 0x71, 0x07]):
             program_offset = 4
             self.programs = []
-            while program_offset < len(bytes_data):
-                (present, name, flags, start_hour, start_minute, end_hour, end_minute) = struct.unpack_from(">?16sccccc", bytes_data, program_offset)
+            while program_offset + 21 < len(bytes_data):
+                (present, name, flags, start_hour, start_minute, end_hour, end_minute) = struct.unpack_from(">?16sbbbbb", bytes_data, program_offset)
                 #TODO interpret flags (day of program ?)
                 if present:
-                    self.programs.append({ "name" : name, "flags":flags, "start":"{}:{}".format(start_hour, start_minute), "end":"{}:{}".format(end_hour, end_minute)})
+                    self.programs.append({ "name" : name.decode('iso-8859-1').strip('\0'), "flags":flags, "start":"{0:02d}:{1:02d}".format(start_hour, start_minute), "end":"{0:02d}:{1:02d}".format(end_hour, end_minute)})
                 program_offset += 22
 
 # SmartPlugSmpB16 usage sample: cycle power then log plug state and power level to terminal
