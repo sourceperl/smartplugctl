@@ -1,4 +1,5 @@
 import binascii
+import struct
 from bluepy import btle
 
 START_OF_MESSAGE = bytes([0x0f])
@@ -66,8 +67,9 @@ class NotificationDelegate(btle.DefaultDelegate):
             self.chg_is_ok = True
         # it's a state/power notification ?
         if bytes_data[0:3] == bytes([0x0f, 0x0f, 0x04]):
-            self.state = bytes_data[4] == 1
-            self.power = int(binascii.hexlify(bytes_data[6:10]), 16) / 1000
+            (state,dummy,power) = struct.unpack_from(">?hi",bytes_data,4)
+            self.state = state
+            self.power = power / 1000
         # it's a 0x0a notif ?
         if bytes_data[0:3] == bytes([0x0f, 0x33, 0x0a]):
             print ("0A notif %s" % bytes_data)
