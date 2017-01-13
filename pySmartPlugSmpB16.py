@@ -30,6 +30,11 @@ class SmartPlug(btle.Peripheral):
         self.wait_data(2.0)
         return self.delegate.state, self.delegate.power
 
+    def program_request(self):
+        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('07000000')))
+        self.wait_data(2.0)
+        return self.delegate.programs
+
     def calculate_checksum(self, message):
         return ((sum(message) + 1) & 0xff).to_bytes(1, byteorder='big')
 
@@ -47,6 +52,7 @@ class NotificationDelegate(btle.DefaultDelegate):
         self.state = False
         self.power = 0
         self.chg_is_ok = False
+        self.programs = []
         self._buffer = b''
         self.need_data = True
 
@@ -67,14 +73,22 @@ class NotificationDelegate(btle.DefaultDelegate):
             self.chg_is_ok = True
         # it's a state/power notification ?
         if bytes_data[0:3] == bytes([0x0f, 0x0f, 0x04]):
-            (state,dummy,power) = struct.unpack_from(">?hi",bytes_data,4)
+            (state, dummy, power) = struct.unpack_from(">?hi", bytes_data, 4)
             self.state = state
             self.power = power / 1000
         # it's a 0x0a notif ?
         if bytes_data[0:3] == bytes([0x0f, 0x33, 0x0a]):
             print ("0A notif %s" % bytes_data)
-
-
+        # it's a programs notif ?
+        if bytes_data[0:3] == bytes([0x0f, 0x71, 0x07]):
+            program_offset = 4
+            self.programs = []
+            while program_offset < len(bytes_data):
+                (present, name, flags, start_hour, start_minute, end_hour, end_minute) = struct.unpack_from(">?16sccccc", bytes_data, program_offset)
+                #TODO interpret flags (day of program ?)
+                if present:
+                    self.programs.append({ "name" : name, "flags":flags, "start":"{}:{}".format(start_hour, start_minute), "end":"{}:{}".format(end_hour, end_minute)})
+                program_offset += 22
 
 # SmartPlugSmpB16 usage sample: cycle power then log plug state and power level to terminal
 if __name__ == '__main__':
