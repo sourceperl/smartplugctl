@@ -61,15 +61,15 @@ elif args.command == 'read_programs':
     try:
         (programs) = plug.program_request()
     except btle.BTLEException as err:
-        sys.exit('error when requesting stat to plug %s (code %d)' % (args.ble_addr, err.code))
+        sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
     # print result
     print('plug programs : ' )
     pprint.pprint(programs)
-elif args.command == 'program':
+elif args.command == 'history':
     try:
-        history = plug.program_request()
+        history = plug.power_history_request()
     except btle.BTLEException as err:
-        sys.exit('error when requesting stat to plug %s (code %d)' % (args.ble_addr, err.code))
+        sys.exit('error when requesting power history to plug %s (code %d)' % (args.ble_addr, err.code))
     # print result
     print('plug power history (24h) = ' + ', '.join(map(str,history)))
     
