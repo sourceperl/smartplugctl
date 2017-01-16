@@ -2,8 +2,8 @@ import binascii
 import struct
 from bluepy import btle
 
-START_OF_MESSAGE = bytes([0x0f])
-END_OF_MESSAGE = bytes([0xff, 0xff])
+START_OF_MESSAGE = b'\x0f'
+END_OF_MESSAGE = b'\xff\xff'
 
 class SmartPlug(btle.Peripheral):
     def __init__(self, addr):
@@ -36,10 +36,10 @@ class SmartPlug(btle.Peripheral):
         return self.delegate.programs
 
     def calculate_checksum(self, message):
-        return ((sum(message) + 1) & 0xff).to_bytes(1, byteorder='big')
+        return (sum(bytearray(message)) + 1) & 0xff
 
     def get_buffer(self, message):
-        return START_OF_MESSAGE + (len(message) + 1).to_bytes(1,byteorder='big') + message +  self.calculate_checksum(message) + END_OF_MESSAGE 
+        return START_OF_MESSAGE + struct.pack("b",len(message) + 1) + message + struct.pack("b",self.calculate_checksum(message)) + END_OF_MESSAGE 
 
     def wait_data(self, timeout):
         self.delegate.need_data = True
@@ -69,18 +69,18 @@ class NotificationDelegate(btle.DefaultDelegate):
 
     def handle_data(self, bytes_data):
         # it's a state change confirm notification ?
-        if bytes_data[0:3] == bytes([0x0f, 0x04, 0x03]):
+        if bytes_data[0:3] == b'\x0f\x04\x03':
             self.chg_is_ok = True
         # it's a state/power notification ?
-        if bytes_data[0:3] == bytes([0x0f, 0x0f, 0x04]):
+        if bytes_data[0:3] == b'\x0f\x0f\x04':
             (state, dummy, power) = struct.unpack_from(">?hi", bytes_data, 4)
             self.state = state
             self.power = power / 1000
         # it's a 0x0a notif ?
-        if bytes_data[0:3] == bytes([0x0f, 0x33, 0x0a]):
+        if bytes_data[0:3] == b'\x0f\x33\x0a':
             print ("0A notif %s" % bytes_data)
         # it's a programs notif ?
-        if bytes_data[0:3] == bytes([0x0f, 0x71, 0x07]):
+        if bytes_data[0:3] == b'\x0f\x71\x07' :
             program_offset = 4
             self.programs = []
             while program_offset + 21 < len(bytes_data):
