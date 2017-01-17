@@ -12,13 +12,14 @@
 from __future__ import print_function
 import sys
 import argparse
+import pprint
 from pySmartPlugSmpB16 import SmartPlug, btle
 
 # parse args
 parser = argparse.ArgumentParser()
 parser.add_argument('ble_addr', type=str, 
                     help='plug bluetooth LE address (like 98:7b:f3:34:78:52)')
-parser.add_argument('command', type=str, choices=['on', 'off', 'status'],
+parser.add_argument('command', type=str, choices=['on', 'off', 'status', 'read_programs'],
                     help='command to send at plug')
 args = parser.parse_args()
 
@@ -56,6 +57,14 @@ elif args.command == 'status':
     status = 'on' if state else 'off'
     print('plug state = %s' % status)
     print('plug power = %d W' % power)
+elif args.command == 'read_programs':
+    try:
+        (programs) = plug.program_request()
+    except btle.BTLEException as err:
+        sys.exit('error when requesting stat to plug %s (code %d)' % (args.ble_addr, err.code))
+    # print result
+    print('plug programs : ' )
+    pprint.pprint(programs)
 
 # disconnect BLE
 plug.disconnect()
