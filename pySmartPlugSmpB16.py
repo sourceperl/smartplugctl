@@ -81,7 +81,7 @@ class NotificationDelegate(btle.DefaultDelegate):
             self.chg_is_ok = True
         # it's a state/power notification ?
         if bytes_data[0:3] == b'\x0f\x0f\x04':
-            (state, dummy, power) = struct.unpack_from(">?hi", bytes_data, 4)
+            (state, dummy, power) = struct.unpack_from(">?BI", bytes_data, offset=4)
             self.state = state
             self.power = power / 1000
         # it's a power history notif ?
