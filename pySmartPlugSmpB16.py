@@ -32,7 +32,7 @@ class SmartPlug(btle.Peripheral):
         self.wait_data(2.0)
         return self.delegate.state, self.delegate.power
 
-    def power_history_request(self):
+    def power_history_hour_request(self):
         self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('0a000000')))
         self.wait_data(2.0)
         return self.delegate.history
