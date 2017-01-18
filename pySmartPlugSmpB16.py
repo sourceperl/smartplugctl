@@ -86,7 +86,7 @@ class NotificationDelegate(btle.DefaultDelegate):
             self.power = power / 1000
         # it's a power history notif ?
         if bytes_data[0:3] == b'\x0f\x33\x0a':
-            history_array = array.array('h', bytes_data[4:52])
+            history_array = array.array('H', bytes_data[4:52])
             # get the right byte order
             if sys.byteorder == 'little':
                 history_array.byteswap()
