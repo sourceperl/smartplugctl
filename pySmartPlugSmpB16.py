@@ -1,5 +1,7 @@
 import binascii
 import struct
+import sys
+import array
 from bluepy import btle
 
 START_OF_MESSAGE = b'\x0f'
@@ -30,6 +32,16 @@ class SmartPlug(btle.Peripheral):
         self.wait_data(2.0)
         return self.delegate.state, self.delegate.power
 
+    def power_history_hour_request(self):
+        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('0a000000')))
+        self.wait_data(2.0)
+        return self.delegate.history
+
+    def power_history_day_request(self):
+        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('0b000000')))
+        self.wait_data(2.0)
+        return self.delegate.history
+
     def program_request(self):
         self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('07000000')))
         self.wait_data(2.0)
@@ -52,6 +64,7 @@ class NotificationDelegate(btle.DefaultDelegate):
         self.state = False
         self.power = 0
         self.chg_is_ok = False
+        self.history = []
         self.programs = []
         self._buffer = b''
         self.need_data = True
@@ -76,10 +89,21 @@ class NotificationDelegate(btle.DefaultDelegate):
             (state, dummy, power) = struct.unpack_from(">?BI", bytes_data, offset=4)
             self.state = state
             self.power = power / 1000
-        # it's a 0x0a notif ?
+        # it's a power history for last 24h notif ?
         if bytes_data[0:3] == b'\x0f\x33\x0a':
-            print ("0A notif %s" % bytes_data)
-        # it's a programs notif ?
+            history_array = array.array('H', bytes_data[4:52])
+            # get the right byte order
+            if sys.byteorder == 'little':
+                history_array.byteswap()
+            self.history = history_array.tolist()
+        # it's a power history kWh/day notif ?
+        if bytes_data[0:3] == b'\x0f\x7b\x0b':
+            history_array = array.array('I', bytes_data[4:124])
+            # get the right byte order
+            if sys.byteorder == 'little':
+                history_array.byteswap()
+            self.history = history_array.tolist()
+         # it's a programs notif ?
         if bytes_data[0:3] == b'\x0f\x71\x07' :
             program_offset = 4
             self.programs = []

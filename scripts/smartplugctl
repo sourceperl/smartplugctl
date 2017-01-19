@@ -19,7 +19,7 @@ from pySmartPlugSmpB16 import SmartPlug, btle
 parser = argparse.ArgumentParser()
 parser.add_argument('ble_addr', type=str, 
                     help='plug bluetooth LE address (like 98:7b:f3:34:78:52)')
-parser.add_argument('command', type=str, choices=['on', 'off', 'status', 'read_programs'],
+parser.add_argument('command', type=str, choices=['on', 'off', 'status', 'read_programs', 'history_hour', 'history_day'],
                     help='command to send at plug')
 args = parser.parse_args()
 
@@ -61,10 +61,26 @@ elif args.command == 'read_programs':
     try:
         (programs) = plug.program_request()
     except btle.BTLEException as err:
-        sys.exit('error when requesting stat to plug %s (code %d)' % (args.ble_addr, err.code))
+        sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
     # print result
     print('plug programs : ' )
     pprint.pprint(programs)
+elif args.command == 'history_hour':
+    try:
+        history = plug.power_history_hour_request()
+    except btle.BTLEException as err:
+        sys.exit('error when requesting power history to plug %s (code %d)' % (args.ble_addr, err.code))
+    # print result
+    print('plug power history (24h) = ' + ', '.join(map(str,history)))
+elif args.command == 'history_day':
+    try:
+        history = plug.power_history_day_request()
+    except btle.BTLEException as err:
+        sys.exit('error when requesting power history to plug %s (code %d)' % (args.ble_addr, err.code))
+    # print result
+    print('plug power history kWh/30 day = ' + ', '.join(map(str,history)))
+    
+    
 
 # disconnect BLE
 plug.disconnect()
