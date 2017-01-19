@@ -47,7 +47,7 @@ elif args.command == 'off':
     if is_ok:
         print('smartPlug is set off')
     else:
-        sys.exit('unable to contact smartPlug')
+        sys.exit('unable to set smartPlug off')
 elif args.command == 'status':
     try:
         (state, power) = plug.status_request()
