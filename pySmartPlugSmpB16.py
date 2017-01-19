@@ -95,14 +95,14 @@ class NotificationDelegate(btle.DefaultDelegate):
             # get the right byte order
             if sys.byteorder == 'little':
                 history_array.byteswap()
-            self.history = history_array.tolist()
+            self.history = reversed(history_array.tolist())
         # it's a power history kWh/day notif ?
         if bytes_data[0:3] == b'\x0f\x7b\x0b':
             history_array = array.array('I', bytes_data[4:124])
             # get the right byte order
             if sys.byteorder == 'little':
                 history_array.byteswap()
-            self.history = history_array.tolist()
+            self.history = reversed(history_array.tolist())
          # it's a programs notif ?
         if bytes_data[0:3] == b'\x0f\x71\x07' :
             program_offset = 4
