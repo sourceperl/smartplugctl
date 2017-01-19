@@ -71,17 +71,17 @@ elif args.command == 'history_hour':
     except btle.BTLEException as err:
         sys.exit('error when requesting power history to plug %s (code %d)' % (args.ble_addr, err.code))
     # print result
-    print('plug power history (24h) = ' + ', '.join(map(str,history)))
+    for i, h in enumerate(reversed(history)):
+        print('plug power h-%02u = %d Wh' % (i+1, h))
 elif args.command == 'history_day':
     try:
         history = plug.power_history_day_request()
     except btle.BTLEException as err:
         sys.exit('error when requesting power history to plug %s (code %d)' % (args.ble_addr, err.code))
     # print result
-    print('plug power history kWh/30 day = ' + ', '.join(map(str,history)))
+    for i, h in enumerate(reversed(history)):
+        print('plug power j-%02u = %d kWh' % (i+1, h))
     
-    
-
 # disconnect BLE
 plug.disconnect()
 
