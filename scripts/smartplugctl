@@ -80,7 +80,7 @@ elif args.command == 'history_day':
         sys.exit('error when requesting power history to plug %s (code %d)' % (args.ble_addr, err.code))
     # print result
     for i, h in enumerate(history):
-        print('plug power j-%02u = %d kWh' % (i+1, h))
+        print('plug power j-%02u = %d Wh' % (i+1, h))
     
 # disconnect BLE
 plug.disconnect()
