@@ -30,7 +30,7 @@ class SmartPlug(btle.Peripheral):
     def status_request(self):
         self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('04000000')))
         self.wait_data(2.0)
-        return self.delegate.state, self.delegate.power
+        return self.delegate.state, self.delegate.power, self.delegate.voltage
 
     def power_history_hour_request(self):
         self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('0a000000')))
@@ -63,6 +63,7 @@ class NotificationDelegate(btle.DefaultDelegate):
         btle.DefaultDelegate.__init__(self)
         self.state = False
         self.power = 0
+        self.voltage = 0
         self.chg_is_ok = False
         self.history = []
         self.programs = []
@@ -86,9 +87,10 @@ class NotificationDelegate(btle.DefaultDelegate):
             self.chg_is_ok = True
         # it's a state/power notification ?
         if bytes_data[0:3] == b'\x0f\x0f\x04':
-            (state, dummy, power) = struct.unpack_from(">?BI", bytes_data, offset=4)
+            (state, dummy, power, voltage) = struct.unpack_from(">?BIB", bytes_data, offset=4)
             self.state = state
             self.power = power / 1000
+            self.voltage = voltage
         # it's a power history for last 24h notif ?
         if bytes_data[0:3] == b'\x0f\x33\x0a':
             history_array = array.array('H', bytes_data[4:52])
