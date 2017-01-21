@@ -52,7 +52,7 @@ class SmartPlug(btle.Peripheral):
         return (sum(bytearray(message)) + 1) & 0xff
 
     def get_buffer(self, message):
-        return START_OF_MESSAGE + struct.pack("b",len(message) + 1) + message + struct.pack("b",self.calculate_checksum(message)) + END_OF_MESSAGE 
+        return START_OF_MESSAGE + struct.pack("B",len(message) + 1) + message + struct.pack("B",self.calculate_checksum(message)) + END_OF_MESSAGE
 
     def wait_data(self, timeout):
         self.delegate.need_data = True
