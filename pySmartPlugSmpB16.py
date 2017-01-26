@@ -7,6 +7,7 @@ from bluepy import btle
 START_OF_MESSAGE = b'\x0f'
 END_OF_MESSAGE = b'\xff\xff'
 
+
 class SmartPlug(btle.Peripheral):
     def __init__(self, addr):
         btle.Peripheral.__init__(self, addr)
@@ -58,6 +59,7 @@ class SmartPlug(btle.Peripheral):
         while self.delegate.need_data and self.waitForNotifications(timeout):
             pass
 
+
 class NotificationDelegate(btle.DefaultDelegate):
     def __init__(self):
         btle.DefaultDelegate.__init__(self)
@@ -71,7 +73,7 @@ class NotificationDelegate(btle.DefaultDelegate):
         self.need_data = True
 
     def handleNotification(self, cHandle, data):
-        #not sure 0x0f indicate begin of buffer but
+        # not sure 0x0f indicate begin of buffer but
         if data[:1] == START_OF_MESSAGE:
             self._buffer = data
         else:
@@ -106,7 +108,7 @@ class NotificationDelegate(btle.DefaultDelegate):
                 history_array.byteswap()
             self.history = reversed(history_array.tolist())
          # it's a programs notif ?
-        if bytes_data[0:3] == b'\x0f\x71\x07' :
+        if bytes_data[0:3] == b'\x0f\x71\x07':
             program_offset = 4
             self.programs = []
             while program_offset + 21 < len(bytes_data):
@@ -130,7 +132,7 @@ if __name__ == '__main__':
 
     # display state and power level
     while True:
-        (state, power) = plug.status_request()
+        (state, power, voltage) = plug.status_request()
         print('plug state = %s' % ('on' if state else 'off'))
         print('plug power = %d W' % power)
         time.sleep(2.0)

@@ -41,9 +41,17 @@ install it with :
 
     smartplugctl 98:7B:F3:34:78:52 off
 
-### Read plug status (on/off and power level)
+### Read plug status (on/off, power level and grid voltage)
 
     smartplugctl 98:7B:F3:34:78:52 status
+
+### Read hourly consumption history (24 hours from now)
+
+    smartplugctl 98:7B:F3:34:78:52 history_hour
+
+### Read daily consumption history (30 days from today)
+
+    smartplugctl 98:7B:F3:34:78:52 history_day
 
 ### Help
 
@@ -69,7 +77,8 @@ Alternatively to smartplug scripts you can directly use module from python code.
 
     # display state and power level
     while True:
-        (state, power) = plug.status_request()
-        print('plug state = %s' % ('on' if state else 'off'))
-        print('plug power = %d W' % power)
+        (state, power, voltage) = plug.status_request()
+        print('plug state   = %s' % ('on' if state else 'off'))
+        print('plug power   = %d W' % power)
+        print('plug voltage = %d V' % voltage)
         time.sleep(2.0)

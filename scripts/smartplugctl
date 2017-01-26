@@ -55,8 +55,8 @@ elif args.command == 'status':
         sys.exit('error when requesting stat to plug %s (code %d)' % (args.ble_addr, err.code))
     # print result
     status = 'on' if state else 'off'
-    print('plug state = %s' % status)
-    print('plug power = %d W' % power)
+    print('plug state   = %s' % status)
+    print('plug power   = %d W' % power)
     print('plug voltage = %d V' % voltage)
 elif args.command == 'read_programs':
     try:
