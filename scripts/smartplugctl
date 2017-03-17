@@ -19,8 +19,9 @@ from pySmartPlugSmpB16 import SmartPlug, btle
 parser = argparse.ArgumentParser()
 parser.add_argument('ble_addr', type=str, 
                     help='plug bluetooth LE address (like 98:7b:f3:34:78:52)')
-parser.add_argument('command', type=str, choices=['on', 'off', 'status', 'read_programs', 'history_hour', 'history_day'],
+parser.add_argument('command', type=str, choices=['on', 'off', 'status', 'read_programs', 'history_hour', 'history_day', 'program_enable'],
                     help='command to send at plug')
+parser.add_argument('args', nargs=argparse.REMAINDER)
 args = parser.parse_args()
 
 # connect to the plug (BLE connect)
@@ -82,7 +83,20 @@ elif args.command == 'history_day':
     # print result
     for i, h in enumerate(history):
         print('plug power j-%02u = %d Wh' % (i+1, h))
-    
+elif args.command == 'program_enable':
+    try:
+        (programs) = plug.program_request()
+    except btle.BTLEException as err:
+        sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
+    if len(programs) > 0:
+        if args.args[0] == "on":
+            programs[0].flags |= 0x80
+        else:
+            programs[0].flags &= 0x7F
+    try:
+        plug.program_write(programs)
+    except btle.BTLEException as err:
+        sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
 # disconnect BLE
 plug.disconnect()
 
