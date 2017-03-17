@@ -90,9 +90,9 @@ elif args.command == 'program_enable':
         sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
     if len(programs) > 0:
         if args.args[0] == "on":
-            programs[0].flags |= 0x80
+            programs[0]["flags"] |= 0x80
         else:
-            programs[0].flags &= 0x7F
+            programs[0]["flags"] &= 0x7F
     try:
         plug.program_write(programs)
     except btle.BTLEException as err:

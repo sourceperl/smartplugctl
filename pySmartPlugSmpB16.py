@@ -44,20 +44,20 @@ class SmartPlug(btle.Peripheral):
         return self.delegate.history
 
     def program_write(self, program_list):
-        buffer = b'\06'
+        buffer = b'\x06\x00'
         for program in program_list:
             start_hour = -1
             start_minute = -1
-            if program.start_time:
-                start_hour, start_minute = map(int, program["start_time"].split(':'))
+            if program["start"]:
+                start_hour, start_minute = map(int, program["start"].split(':'))
             end_hour = -1
             end_minute = -1
-            if program.start_time:
-                end_hour, end_minute = map(int, program["end_time"].split(':'))
+            if program["end"]:
+                end_hour, end_minute = map(int, program["end"].split(':'))
 
-            buffer += struct.pack(">?16sbbbbb", True, program["name"].encode('iso-8859-1'), program["flags"], start_hour, start_minute, end_hour, end_minute)
+            buffer += struct.pack(">?16sBbbbb", True, program["name"].encode('iso-8859-1'), program["flags"], start_hour, start_minute, end_hour, end_minute)
 
-        buffer = buffer.ljust(1 + 5*22, '\0')
+        buffer = buffer.ljust(2 + 5*22, '\0')
         self.write_data(self.get_buffer(buffer))
         self.wait_data(0.5)
         return self.delegate.history
@@ -137,7 +137,7 @@ class NotificationDelegate(btle.DefaultDelegate):
             program_offset = 4
             self.programs = []
             while program_offset + 21 < len(bytes_data):
-                (present, name, flags, start_hour, start_minute, end_hour, end_minute) = struct.unpack_from(">?16sbbbbb", bytes_data, program_offset)
+                (present, name, flags, start_hour, start_minute, end_hour, end_minute) = struct.unpack_from(">?16sBbbbb", bytes_data, program_offset)
                 #TODO interpret flags (day of program ?)
                 if present:
                     start_time = None
