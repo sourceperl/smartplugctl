@@ -18,33 +18,33 @@ class SmartPlug(btle.Peripheral):
 
     def on(self):
         self.delegate.chg_is_ok = False
-        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('0300010000')))
+        self.write_data(self.get_buffer(binascii.unhexlify('0300010000')))
         self.wait_data(0.5)
         return self.delegate.chg_is_ok
 
     def off(self):
         self.delegate.chg_is_ok = False
-        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('0300000000')))
+        self.write_data(self.get_buffer(binascii.unhexlify('0300000000')))
         self.wait_data(0.5)
         return self.delegate.chg_is_ok
 
     def status_request(self):
-        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('04000000')))
+        self.write_data(self.get_buffer(binascii.unhexlify('04000000')))
         self.wait_data(2.0)
         return self.delegate.state, self.delegate.power, self.delegate.voltage
 
     def power_history_hour_request(self):
-        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('0a000000')))
+        self.write_data(self.get_buffer(binascii.unhexlify('0a000000')))
         self.wait_data(2.0)
         return self.delegate.history
 
     def power_history_day_request(self):
-        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('0b000000')))
+        self.write_data(self.get_buffer(binascii.unhexlify('0b000000')))
         self.wait_data(2.0)
         return self.delegate.history
 
     def program_request(self):
-        self.plug_cmd_ch.write(self.get_buffer(binascii.unhexlify('07000000')))
+        self.write_data(self.get_buffer(binascii.unhexlify('07000000')))
         self.wait_data(2.0)
         return self.delegate.programs
 
@@ -53,6 +53,12 @@ class SmartPlug(btle.Peripheral):
 
     def get_buffer(self, message):
         return START_OF_MESSAGE + struct.pack("B",len(message) + 1) + message + struct.pack("B",self.calculate_checksum(message)) + END_OF_MESSAGE
+
+    def write_data(self, data):
+        remaining_data = data
+        while len(remaining_data) > 0:
+            self.plug_cmd_ch.write(remaining_data[:20])
+            remaining_data = remaining_data[20:]
 
     def wait_data(self, timeout):
         self.delegate.need_data = True
