@@ -43,6 +43,25 @@ class SmartPlug(btle.Peripheral):
         self.wait_data(2.0)
         return self.delegate.history
 
+    def program_write(self, program_list):
+        buffer = b'\06'
+        for program in program_list:
+            start_hour = -1
+            start_minute = -1
+            if program.start_time:
+                start_hour, start_minute = map(int, program["start_time"].split(':'))
+            end_hour = -1
+            end_minute = -1
+            if program.start_time:
+                end_hour, end_minute = map(int, program["end_time"].split(':'))
+
+            buffer += struct.pack(">?16sbbbbb", True, program["name"].encode('iso-8859-1'), program["flags"], start_hour, start_minute, end_hour, end_minute)
+
+        buffer = buffer.ljust(1 + 5*22, '\0')
+        self.write_data(self.get_buffer(buffer))
+        self.wait_data(0.5)
+        return self.delegate.history
+
     def program_request(self):
         self.write_data(self.get_buffer(binascii.unhexlify('07000000')))
         self.wait_data(2.0)
