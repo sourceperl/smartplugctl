@@ -19,9 +19,9 @@ from pySmartPlugSmpB16 import SmartPlug, btle
 parser = argparse.ArgumentParser()
 parser.add_argument('ble_addr', type=str, 
                     help='plug bluetooth LE address (like 98:7b:f3:34:78:52)')
-parser.add_argument('command', type=str, choices=['on', 'off', 'status', 'read_programs', 'history_hour', 'history_day', 'program_enable'],
+parser.add_argument('command', type=str, choices=['on', 'off', 'status', 'read_programs', 'history_hour', 'history_day', 'program_enable', 'program_update'],
                     help='command to send at plug')
-parser.add_argument('args', nargs=argparse.REMAINDER)
+parser.add_argument('remainder', nargs=argparse.REMAINDER)
 args = parser.parse_args()
 
 # connect to the plug (BLE connect)
@@ -88,11 +88,32 @@ elif args.command == 'program_enable':
         (programs) = plug.program_request()
     except btle.BTLEException as err:
         sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
+    program_number = 0
+    if len(args.remainder) > 1:
+        program_number = int(args.remainder[1])
     if len(programs) > 0:
-        if args.args[0] == "on":
-            programs[0]["flags"] |= 0x80
+        if args.remainder[0] == "on":
+            programs[program_number]["flags"] |= 0x80
         else:
-            programs[0]["flags"] &= 0x7F
+            programs[program_number]["flags"] &= 0x7F
+    try:
+        plug.program_write(programs)
+    except btle.BTLEException as err:
+        sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
+elif args.command == 'program_update':
+    try:
+        (programs) = plug.program_request()
+    except btle.BTLEException as err:
+        sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
+    program_number = int(args.remainder[0])
+    if args.remainder[1] == '-':
+        programs[program_number]["start"] = None
+    else:
+        programs[program_number]["start"] = args.remainder[1]
+    if args.remainder[2] == '-':
+        programs[program_number]["end"] = None
+    else:
+        programs[program_number]["end"] = args.remainder[2]
     try:
         plug.program_write(programs)
     except btle.BTLEException as err:
