@@ -91,11 +91,13 @@ elif args.command == 'program_enable':
     program_number = 0
     if len(args.remainder) > 1:
         program_number = int(args.remainder[1])
-    if len(programs) > 0:
+    if len(programs) > program_number:
         if args.remainder[0] == "on":
             programs[program_number]["flags"] |= 0x80
         else:
             programs[program_number]["flags"] &= 0x7F
+    else:
+        sys.exit('program %d does not exist' % (program_number))
     try:
         plug.program_write(programs)
     except btle.BTLEException as err:
@@ -106,6 +108,11 @@ elif args.command == 'program_update':
     except btle.BTLEException as err:
         sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
     program_number = int(args.remainder[0])
+
+    # add programs empty to go to index
+    while len(programs) <= program_number:
+        programs.append({'name':'program', 'start':None, 'end':None, 'flags':0x7F})
+
     if args.remainder[1] == '-':
         programs[program_number]["start"] = None
     else:
