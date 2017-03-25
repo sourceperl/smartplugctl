@@ -33,7 +33,8 @@ parser_program_update = subparsers.add_parser('program_update', help='Create/mod
 parser_program_update.add_argument('program', type=int, choices=range(0, 5), default=0, help='Program number')
 parser_program_update.add_argument('start', type=str, default='-', help='Start time or - for no value')
 parser_program_update.add_argument('end', type=str, default='-', help='End time or - for no value')
-
+parser_program_delete = subparsers.add_parser('program_delete', help='Delete one program')
+parser_program_delete.add_argument('program', type=int, choices=range(0, 5), default=0, help='Program number')
 
 args = parser.parse_args()
 
@@ -112,7 +113,7 @@ elif args.command == 'program_enable':
     try:
         plug.program_write(programs)
     except btle.BTLEException as err:
-        sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
+        sys.exit('error when writing program to plug %s (code %d)' % (args.ble_addr, err.code))
 elif args.command == 'program_update':
     try:
         programs = plug.program_request()
@@ -135,7 +136,23 @@ elif args.command == 'program_update':
     try:
         plug.program_write(programs)
     except btle.BTLEException as err:
+        sys.exit('error when writing program to plug %s (code %d)' % (args.ble_addr, err.code))
+elif args.command == 'program_delete':
+    try:
+        programs = plug.program_request()
+    except btle.BTLEException as err:
         sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
+    program_number = args.program
+
+    if len(programs) > program_number:
+        programs.pop(program_number)
+    else:
+        sys.exit('program %d does not exist' % (program_number))
+
+    try:
+        plug.program_write(programs)
+    except btle.BTLEException as err:
+        sys.exit('error when writing program to plug %s (code %d)' % (args.ble_addr, err.code))
 # disconnect BLE
 plug.disconnect()
 
