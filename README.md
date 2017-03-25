@@ -65,11 +65,11 @@ Update second program for switch on at 10h10 and switch off at 13h23.
 
 ### Enable / disable a program
 
-    smartplugctl 98:7B:F3:34:78:52 program_enable on 0
+    smartplugctl 98:7B:F3:34:78:52 program_enable 0 on
 
 Enable first program.
 
-    smartplugctl 98:7B:F3:34:78:52 program_enable off 1
+    smartplugctl 98:7B:F3:34:78:52 program_enable 1 on
 
 Disable second program.
 
