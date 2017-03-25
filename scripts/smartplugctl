@@ -19,9 +19,22 @@ from pySmartPlugSmpB16 import SmartPlug, btle
 parser = argparse.ArgumentParser()
 parser.add_argument('ble_addr', type=str, 
                     help='plug bluetooth LE address (like 98:7b:f3:34:78:52)')
-parser.add_argument('command', type=str, choices=['on', 'off', 'status', 'read_programs', 'history_hour', 'history_day', 'program_enable', 'program_update'],
-                    help='command to send at plug')
-parser.add_argument('remainder', nargs=argparse.REMAINDER)
+subparsers = parser.add_subparsers(title='command', dest='command')
+subparsers.add_parser('on', help='Turn plug on')
+subparsers.add_parser('off', help='Turn plug off')
+subparsers.add_parser('status', help='Read plug status (on/off, power level and grid voltage)')
+subparsers.add_parser('history_hour', help='Read hourly consumption history (24 hours from now)')
+subparsers.add_parser('history_day', help='Read daily consumption history (30 days from today)')
+subparsers.add_parser('read_programs', help='Read current programs')
+parser_program_enable = subparsers.add_parser('program_enable', help='Enable/Disable one program')
+parser_program_enable.add_argument('state', type=str, choices=['on', 'off'])
+parser_program_enable.add_argument('program', type=int, choices=range(0, 5), default=0, help='Program number')
+parser_program_update = subparsers.add_parser('program_update', help='Create/modify one program')
+parser_program_update.add_argument('program', type=int, choices=range(0, 5), default=0, help='Program number')
+parser_program_update.add_argument('start', type=str, default='-', help='Start time or - for no value')
+parser_program_update.add_argument('end', type=str, default='-', help='End time or - for no value')
+
+
 args = parser.parse_args()
 
 # connect to the plug (BLE connect)
@@ -88,11 +101,9 @@ elif args.command == 'program_enable':
         (programs) = plug.program_request()
     except btle.BTLEException as err:
         sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
-    program_number = 0
-    if len(args.remainder) > 1:
-        program_number = int(args.remainder[1])
+    program_number = args.program
     if len(programs) > program_number:
-        if args.remainder[0] == "on":
+        if args.state == "on":
             programs[program_number]["flags"] |= 0x80
         else:
             programs[program_number]["flags"] &= 0x7F
@@ -104,23 +115,23 @@ elif args.command == 'program_enable':
         sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
 elif args.command == 'program_update':
     try:
-        (programs) = plug.program_request()
+        programs = plug.program_request()
     except btle.BTLEException as err:
         sys.exit('error when requesting program to plug %s (code %d)' % (args.ble_addr, err.code))
-    program_number = int(args.remainder[0])
+    program_number = args.program
 
     # add programs empty to go to index
     while len(programs) <= program_number:
         programs.append({'name':'program', 'start':None, 'end':None, 'flags':0x7F})
 
-    if args.remainder[1] == '-':
+    if args.start == '-':
         programs[program_number]["start"] = None
     else:
-        programs[program_number]["start"] = args.remainder[1]
-    if args.remainder[2] == '-':
+        programs[program_number]["start"] = args.start
+    if args.end == '-':
         programs[program_number]["end"] = None
     else:
-        programs[program_number]["end"] = args.remainder[2]
+        programs[program_number]["end"] = args.end
     try:
         plug.program_write(programs)
     except btle.BTLEException as err:
