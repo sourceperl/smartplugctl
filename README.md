@@ -73,6 +73,10 @@ Enable first program.
 
 Disable second program.
 
+### Delete a program
+
+    smartplugctl 98:7B:F3:34:78:52 program_delete 0
+
 ### Help
 
     smartplugctl -h
