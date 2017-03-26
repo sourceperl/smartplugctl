@@ -35,6 +35,7 @@ parser_program_update.add_argument('start', type=str, default='-', help='Start t
 parser_program_update.add_argument('end', type=str, default='-', help='End time or - for no value')
 parser_program_delete = subparsers.add_parser('program_delete', help='Delete one program')
 parser_program_delete.add_argument('program', type=int, choices=range(0, 5), default=0, help='Program number')
+subparsers.add_parser('set_time', help='Set current time to the plug')
 
 args = parser.parse_args()
 
@@ -153,6 +154,11 @@ elif args.command == 'program_delete':
         plug.program_write(programs)
     except btle.BTLEException as err:
         sys.exit('error when writing program to plug %s (code %d)' % (args.ble_addr, err.code))
+elif args.command == 'set_time':
+    try:
+        plug.set_time()
+    except btle.BTLEException as err:
+        sys.exit('error when setting time to plug %s (code %d)' % (args.ble_addr, err.code))
 # disconnect BLE
 plug.disconnect()
 

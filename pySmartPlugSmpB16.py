@@ -1,4 +1,5 @@
 import binascii
+import datetime
 import struct
 import sys
 import array
@@ -15,6 +16,16 @@ class SmartPlug(btle.Peripheral):
         self.setDelegate(self.delegate)
         self.plug_svc = self.getServiceByUUID('0000fff0-0000-1000-8000-00805f9b34fb')
         self.plug_cmd_ch = self.plug_svc.getCharacteristics('0000fff3-0000-1000-8000-00805f9b34fb')[0]
+
+    def set_time(self):
+        self.delegate.chg_is_ok = False
+        buffer = b'\x01\x00'
+        now = datetime.datetime.now()
+        buffer += struct.pack(">BBBBBH", now.hour, now.minute, now.second, now.day, now.month, now.year)
+        buffer += b'\x00\x00\x00\x00'
+        self.write_data(self.get_buffer(buffer))
+        self.wait_data(0.5)
+        return self.delegate.chg_is_ok
 
     def on(self):
         self.delegate.chg_is_ok = False
@@ -109,6 +120,9 @@ class NotificationDelegate(btle.DefaultDelegate):
             self.need_data = False 
 
     def handle_data(self, bytes_data):
+        # it's a state change confirm notification ?
+        if bytes_data[0:3] == b'\x0f\x04\x01\x00\x00':
+            self.chg_is_ok = True
         # it's a state change confirm notification ?
         if bytes_data[0:3] == b'\x0f\x04\x03':
             self.chg_is_ok = True
