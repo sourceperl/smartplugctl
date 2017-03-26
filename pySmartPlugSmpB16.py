@@ -81,7 +81,7 @@ class SmartPlug(btle.Peripheral):
 
     def light_enable(self, enable):
         self.delegate.chg_is_ok = False
-        buffer = b'\x0F\x00\x00'
+        buffer = b'\x0F\x00\x01'
         buffer += struct.pack(">?x",enable)
         self.write_data(self.get_buffer(buffer))
         self.wait_data(0.5)
