@@ -156,9 +156,13 @@ elif args.command == 'program_delete':
         sys.exit('error when writing program to plug %s (code %d)' % (args.ble_addr, err.code))
 elif args.command == 'set_time':
     try:
-        plug.set_time()
+        is_ok = plug.set_time()
     except btle.BTLEException as err:
         sys.exit('error when setting time to plug %s (code %d)' % (args.ble_addr, err.code))
+    if is_ok:
+        print('time is set on smartPlug')
+    else:
+        sys.exit('unable to set time on SmartPlug')
 # disconnect BLE
 plug.disconnect()
 
