@@ -121,7 +121,7 @@ class NotificationDelegate(btle.DefaultDelegate):
 
     def handle_data(self, bytes_data):
         # it's a state change confirm notification ?
-        if bytes_data[0:3] == b'\x0f\x04\x01\x00\x00':
+        if bytes_data[0:5] == b'\x0f\x04\x01\x00\x00':
             self.chg_is_ok = True
         # it's a state change confirm notification ?
         if bytes_data[0:3] == b'\x0f\x04\x03':
