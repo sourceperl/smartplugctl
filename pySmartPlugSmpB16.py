@@ -73,6 +73,20 @@ class SmartPlug(btle.Peripheral):
         self.wait_data(0.5)
         return self.delegate.history
 
+    def reset(self):
+        self.delegate.chg_is_ok = False
+        self.write_data(self.get_buffer(binascii.unhexlify('0F00000000')))
+        self.wait_data(0.5)
+        return self.delegate.chg_is_ok
+
+    def light_enable(self, enable):
+        self.delegate.chg_is_ok = False
+        buffer = b'\x0F\x00\x00'
+        buffer += struct.pack(">?x",enable)
+        self.write_data(self.get_buffer(buffer))
+        self.wait_data(0.5)
+        return self.delegate.chg_is_ok
+
     def program_request(self):
         self.write_data(self.get_buffer(binascii.unhexlify('07000000')))
         self.wait_data(2.0)
@@ -162,7 +176,8 @@ class NotificationDelegate(btle.DefaultDelegate):
                         end_time = "{0:02d}:{1:02d}".format(end_hour, end_minute)
                     self.programs.append({"name" : name.decode('iso-8859-1').strip('\0'), "flags":flags, "start":start_time, "end":end_time})
                 program_offset += 22
-
+        if bytes_data[0:4] == b'\x0f\x05\x0f\x00':
+            self.chg_is_ok = True
 # SmartPlugSmpB16 usage sample: cycle power then log plug state and power level to terminal
 if __name__ == '__main__':
     import time

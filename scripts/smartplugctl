@@ -36,6 +36,9 @@ parser_program_update.add_argument('end', type=str, default='-', help='End time 
 parser_program_delete = subparsers.add_parser('program_delete', help='Delete one program')
 parser_program_delete.add_argument('program', type=int, choices=range(0, 5), default=0, help='Program number')
 subparsers.add_parser('set_time', help='Set current time to the plug')
+subparsers.add_parser('reset', help='Reset the plug history and program')
+parser_light_enable = subparsers.add_parser('light_enable', help='Enable/Disable notification light')
+parser_light_enable.add_argument('state', type=str, choices=['on', 'off'])
 
 args = parser.parse_args()
 
@@ -163,6 +166,24 @@ elif args.command == 'set_time':
         print('time is set on smartPlug')
     else:
         sys.exit('unable to set time on SmartPlug')
+elif args.command == 'reset':
+    try:
+        is_ok = plug.reset()
+    except btle.BTLEException as err:
+        sys.exit('error when reset plug %s (code %d)' % (args.ble_addr, err.code))
+    if is_ok:
+        print('reset smartPlug')
+    else:
+        sys.exit('unable reset SmartPlug')
+elif args.command == 'light_enable':
+    try:
+        is_ok = plug.light_enable(args.state == 'on')
+    except btle.BTLEException as err:
+        sys.exit('error when setting light enable to plug %s (code %d)' % (args.ble_addr, err.code))
+    if is_ok:
+        print('light enable set on smartPlug')
+    else:
+        sys.exit('unable to set light enable on SmartPlug')
 # disconnect BLE
 plug.disconnect()
 
