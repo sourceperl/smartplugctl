@@ -39,6 +39,9 @@ subparsers.add_parser('set_time', help='Set current time to the plug')
 subparsers.add_parser('reset', help='Reset the plug history and program')
 parser_light_enable = subparsers.add_parser('light_enable', help='Enable/Disable notification light')
 parser_light_enable.add_argument('state', type=str, choices=['on', 'off'])
+subparsers.add_parser('get_name', help='Get the plug name')
+parser_set_name = subparsers.add_parser('set_name', help='Set the plug name')
+parser_set_name.add_argument('name', type=str)
 
 args = parser.parse_args()
 
@@ -184,6 +187,21 @@ elif args.command == 'light_enable':
         print('light enable set on smartPlug')
     else:
         sys.exit('unable to set light enable on SmartPlug')
+elif args.command == 'get_name':
+    try:
+        name = plug.get_name()
+    except btle.BTLEException as err:
+        sys.exit('error when requesting name of plug %s (code %d)' % (args.ble_addr, err.code))
+    print('plug name   = %s' % name)
+elif args.command == 'set_name':
+    try:
+        is_ok = plug.set_name(args.name)
+    except btle.BTLEException as err:
+        sys.exit('error when setting name to plug %s (code %d)' % (args.ble_addr, err.code))
+    if is_ok:
+        print('name set on smartPlug')
+    else:
+        sys.exit('unable to set name on SmartPlug')
 # disconnect BLE
 plug.disconnect()
 

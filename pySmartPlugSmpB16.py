@@ -16,6 +16,11 @@ class SmartPlug(btle.Peripheral):
         self.setDelegate(self.delegate)
         self.plug_svc = self.getServiceByUUID('0000fff0-0000-1000-8000-00805f9b34fb')
         self.plug_cmd_ch = self.plug_svc.getCharacteristics('0000fff3-0000-1000-8000-00805f9b34fb')[0]
+        self.plug_name_ch = self.plug_svc.getCharacteristics('0000fff6-0000-1000-8000-00805f9b34fb')[0]
+
+    def get_name(self):
+        name = self.plug_name_ch.read()
+        return name.decode('iso-8859-1')
 
     def set_time(self):
         self.delegate.chg_is_ok = False
@@ -23,6 +28,13 @@ class SmartPlug(btle.Peripheral):
         now = datetime.datetime.now()
         buffer += struct.pack(">BBBBBH", now.hour, now.minute, now.second, now.day, now.month, now.year)
         buffer += b'\x00\x00\x00\x00'
+        self.write_data(self.get_buffer(buffer))
+        self.wait_data(0.5)
+        return self.delegate.chg_is_ok
+
+    def set_name(self, name):
+        buffer = b'\x02\x00'
+        buffer += struct.pack(">20s", name.encode('iso-8859-1'))
         self.write_data(self.get_buffer(buffer))
         self.wait_data(0.5)
         return self.delegate.chg_is_ok
@@ -134,8 +146,11 @@ class NotificationDelegate(btle.DefaultDelegate):
             self.need_data = False 
 
     def handle_data(self, bytes_data):
-        # it's a state change confirm notification ?
+        # it's a set time confirm notification ?
         if bytes_data[0:5] == b'\x0f\x04\x01\x00\x00':
+            self.chg_is_ok = True
+        # it's a set name confirm notification ?
+        if bytes_data[0:5] == b'\x0f\x04\x02\x00\x00':
             self.chg_is_ok = True
         # it's a state change confirm notification ?
         if bytes_data[0:3] == b'\x0f\x04\x03':
