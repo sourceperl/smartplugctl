@@ -25,7 +25,7 @@ subparsers.add_parser('off', help='Turn plug off')
 subparsers.add_parser('status', help='Read plug status (on/off, power level and grid voltage)')
 subparsers.add_parser('history_hour', help='Read hourly consumption history (24 hours from now)')
 subparsers.add_parser('history_day', help='Read daily consumption history (30 days from today)')
-subparsers.add_parser('read_programs', help='Read current programs')
+subparsers.add_parser('program_read', help='Read current programs')
 parser_program_enable = subparsers.add_parser('program_enable', help='Enable/Disable one program')
 parser_program_enable.add_argument('program', type=int, choices=range(0, 5), default=0, help='Program number')
 parser_program_enable.add_argument('state', type=str, choices=['on', 'off'])
@@ -80,7 +80,7 @@ elif args.command == 'status':
     print('plug state   = %s' % status)
     print('plug power   = %d W' % power)
     print('plug voltage = %d V' % voltage)
-elif args.command == 'read_programs':
+elif args.command == 'program_read':
     try:
         (programs) = plug.program_request()
     except btle.BTLEException as err:
