@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='smartplugctl',
-    version='0.0.4',
+    version='0.0.5',
     license='MIT',
     url='https://github.com/sourceperl/smartplugctl',
     platforms='any',
