@@ -53,6 +53,12 @@ install it with :
 
     smartplugctl 98:7B:F3:34:78:52 history_day
 
+### Set plug date/time
+
+    smartplugctl 98:7B:F3:34:78:52 set_time
+
+This is required for good plug program schedule.
+
 ### Update a program
 
     smartplugctl 98:7B:F3:34:78:52 program_update 0 - 13:23
@@ -76,6 +82,18 @@ Disable second program.
 ### Delete a program
 
     smartplugctl 98:7B:F3:34:78:52 program_delete 0
+
+### Add program example
+
+Set plug on at 10:00 and off at 10:10 :
+
+    smartplugctl 98:7B:F3:34:78:52 set_time
+    smartplugctl 98:7B:F3:34:78:52 program_update 0 10:00 10:10
+    smartplugctl 98:7B:F3:34:78:52 program_enable 0 on
+
+Check program list to ensure all is ok :
+
+    smartplugctl 98:7B:F3:34:78:52 program_read
 
 ### Help
 
