@@ -53,6 +53,16 @@ install it with :
 
     smartplugctl 98:7B:F3:34:78:52 history_day
 
+### Manage plug LED (usefull for bedroom)
+
+Turn off:
+
+    smartplugctl 98:7b:f3:34:78:52 light_enable off
+
+Turn on:
+
+    smartplugctl 98:7b:f3:34:78:52 light_enable on
+
 ### Set plug date/time
 
     smartplugctl 98:7B:F3:34:78:52 set_time
