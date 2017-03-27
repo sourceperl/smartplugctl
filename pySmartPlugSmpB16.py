@@ -26,7 +26,7 @@ class SmartPlug(btle.Peripheral):
         self.delegate.chg_is_ok = False
         buffer = b'\x01\x00'
         now = datetime.datetime.now()
-        buffer += struct.pack(">BBBBBH", now.hour, now.minute, now.second, now.day, now.month, now.year)
+        buffer += struct.pack(">BBBBBH", now.second, now.minute, now.hour, now.day, now.month, now.year)
         buffer += b'\x00\x00\x00\x00'
         self.write_data(self.get_buffer(buffer))
         self.wait_data(0.5)
