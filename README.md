@@ -53,6 +53,30 @@ install it with :
 
     smartplugctl 98:7B:F3:34:78:52 history_day
 
+### Update a program
+
+    smartplugctl 98:7B:F3:34:78:52 program_update 0 - 13:23
+
+Update first program for no switch on and switch off at 13h23.
+
+    smartplugctl 98:7B:F3:34:78:52 program_update 1 10:10 13:23
+
+Update second program for switch on at 10h10 and switch off at 13h23.
+
+### Enable / disable a program
+
+    smartplugctl 98:7B:F3:34:78:52 program_enable 0 on
+
+Enable first program.
+
+    smartplugctl 98:7B:F3:34:78:52 program_enable 1 on
+
+Disable second program.
+
+### Delete a program
+
+    smartplugctl 98:7B:F3:34:78:52 program_delete 0
+
 ### Help
 
     smartplugctl -h
