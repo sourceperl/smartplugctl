@@ -27,6 +27,8 @@ install it with :
 ### Setup
 
     sudo apt-get install -y python-setuptools
+    git clone https://github.com/sourceperl/smartplugctl.git
+    cd smartplugctl
     sudo python setup.py install
 
 ### Find a plug
